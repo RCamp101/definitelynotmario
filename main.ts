@@ -1,14 +1,60 @@
 namespace SpriteKind {
     export const BigPowerup = SpriteKind.create()
     export const crouch = SpriteKind.create()
+    export const Big = SpriteKind.create()
 }
 scene.onHitWall(SpriteKind.Player, function (sprite, location) {
     if (tiles.tileAtLocationEquals(location, assets.tile`myTile2`)) {
         if (controller.up.isPressed() && M.y > 60) {
             tiles.setTileAt(location, assets.tile`myTile4`)
             tiles.setWallAt(location, true)
+            bigBoyMush = sprites.create(img`
+                . . . . . 4 4 4 4 4 4 . . . . . 
+                . . . . 4 4 4 4 4 4 4 4 . . . . 
+                . . . 4 4 4 4 4 1 4 4 4 4 . . . 
+                . . 4 4 4 4 4 4 4 4 4 4 4 4 . . 
+                . 4 4 4 1 4 4 4 4 4 4 4 4 4 4 . 
+                4 4 4 4 4 4 4 4 4 4 4 1 4 4 4 4 
+                4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 
+                4 4 1 4 4 4 4 1 4 4 4 4 4 4 4 4 
+                4 4 4 4 4 4 4 4 4 4 4 4 4 1 4 4 
+                . 4 4 4 4 4 4 4 4 1 4 4 4 4 4 . 
+                . . . . 4 4 4 4 4 4 4 4 . . . . 
+                . . . . d 4 4 4 4 4 4 d . . . . 
+                . . . . d d d d d d d d . . . . 
+                . . . . d d d d d d d d . . . . 
+                . . . . d d d d d d d d . . . . 
+                . . . . d d d d d d d d . . . . 
+                `, SpriteKind.BigPowerup)
+            tiles.placeOnTile(bigBoyMush, tiles.getTileLocation(10, 3))
+            bigBoyMush.setVelocity(45, -100)
+            bigBoyMush.ay = 500
         } else {
-        	
+            if (M.vy > 30) {
+                tiles.setTileAt(location, assets.tile`myTile4`)
+                tiles.setWallAt(location, true)
+                bigBoyMush = sprites.create(img`
+                    . . . . . 4 4 4 4 4 4 . . . . . 
+                    . . . . 4 4 4 4 4 4 4 4 . . . . 
+                    . . . 4 4 4 4 4 1 4 4 4 4 . . . 
+                    . . 4 4 4 4 4 4 4 4 4 4 4 4 . . 
+                    . 4 4 4 1 4 4 4 4 4 4 4 4 4 4 . 
+                    4 4 4 4 4 4 4 4 4 4 4 1 4 4 4 4 
+                    4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 
+                    4 4 1 4 4 4 4 1 4 4 4 4 4 4 4 4 
+                    4 4 4 4 4 4 4 4 4 4 4 4 4 1 4 4 
+                    . 4 4 4 4 4 4 4 4 1 4 4 4 4 4 . 
+                    . . . . 4 4 4 4 4 4 4 4 . . . . 
+                    . . . . d 4 4 4 4 4 4 d . . . . 
+                    . . . . d d d d d d d d . . . . 
+                    . . . . d d d d d d d d . . . . 
+                    . . . . d d d d d d d d . . . . 
+                    . . . . d d d d d d d d . . . . 
+                    `, SpriteKind.BigPowerup)
+                tiles.placeOnTile(bigBoyMush, tiles.getTileLocation(10, 5))
+                bigBoyMush.setVelocity(45, -100)
+                bigBoyMush.ay = 500
+            }
         }
     }
 })
@@ -16,7 +62,6 @@ controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
     M.vy = -200
 })
 controller.down.onEvent(ControllerButtonEvent.Released, function () {
-    M.setKind(SpriteKind.Player)
     M.setImage(img`
         ........222222222222222.........
         ........222222222221111.........
@@ -53,34 +98,89 @@ controller.down.onEvent(ControllerButtonEvent.Released, function () {
         `)
     M.ay += -500
 })
-sprites.onOverlap(SpriteKind.Player, SpriteKind.BigPowerup, function (sprite, otherSprite) {
-    M.setScale(0.5, ScaleAnchor.Middle)
-    sprites.destroy(bigBoyMush)
-})
 scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile9`, function (sprite, location) {
     info.changeLifeBy(-1)
     pause(500)
     tiles.placeOnTile(M, tiles.getTileLocation(1, 5))
 })
-sprites.onOverlap(SpriteKind.crouch, SpriteKind.BigPowerup, function (sprite, otherSprite) {
+sprites.onOverlap(SpriteKind.Player, SpriteKind.BigPowerup, function (sprite, otherSprite) {
     M.setScale(0.5, ScaleAnchor.Middle)
     sprites.destroy(bigBoyMush)
+    M.setKind(SpriteKind.Big)
+})
+sprites.onOverlap(SpriteKind.Big, SpriteKind.BigPowerup, function (sprite, otherSprite) {
+    sprites.destroy(bigBoyMush)
+    M.setKind(SpriteKind.Big)
+    info.changeLifeBy(1)
 })
 controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
-    M.setKind(SpriteKind.crouch)
     M.setImage(assets.image`crouch`)
     M.ay += 500
 })
 info.onLifeZero(function () {
     game.gameOver(false)
 })
-scene.onHitWall(SpriteKind.crouch, function (sprite, location) {
+scene.onHitWall(SpriteKind.Big, function (sprite, location) {
     if (tiles.tileAtLocationEquals(location, assets.tile`myTile2`)) {
-        if (M.vy > 30) {
+        if (controller.up.isPressed() && M.y > 60) {
             tiles.setTileAt(location, assets.tile`myTile4`)
             tiles.setWallAt(location, true)
+            bigBoyMush = sprites.create(img`
+                . . . . . 4 4 4 4 4 4 . . . . . 
+                . . . . 4 4 4 4 4 4 4 4 . . . . 
+                . . . 4 4 4 4 4 1 4 4 4 4 . . . 
+                . . 4 4 4 4 4 4 4 4 4 4 4 4 . . 
+                . 4 4 4 1 4 4 4 4 4 4 4 4 4 4 . 
+                4 4 4 4 4 4 4 4 4 4 4 1 4 4 4 4 
+                4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 
+                4 4 1 4 4 4 4 1 4 4 4 4 4 4 4 4 
+                4 4 4 4 4 4 4 4 4 4 4 4 4 1 4 4 
+                . 4 4 4 4 4 4 4 4 1 4 4 4 4 4 . 
+                . . . . 4 4 4 4 4 4 4 4 . . . . 
+                . . . . d 4 4 4 4 4 4 d . . . . 
+                . . . . d d d d d d d d . . . . 
+                . . . . d d d d d d d d . . . . 
+                . . . . d d d d d d d d . . . . 
+                . . . . d d d d d d d d . . . . 
+                `, SpriteKind.BigPowerup)
+            tiles.placeOnTile(bigBoyMush, tiles.getTileLocation(10, 3))
+            bigBoyMush.setVelocity(45, -100)
+            bigBoyMush.ay = 500
+        } else {
+            if (M.vy > 30) {
+                tiles.setTileAt(location, assets.tile`myTile4`)
+                tiles.setWallAt(location, true)
+                bigBoyMush = sprites.create(img`
+                    . . . . . 4 4 4 4 4 4 . . . . . 
+                    . . . . 4 4 4 4 4 4 4 4 . . . . 
+                    . . . 4 4 4 4 4 1 4 4 4 4 . . . 
+                    . . 4 4 4 4 4 4 4 4 4 4 4 4 . . 
+                    . 4 4 4 1 4 4 4 4 4 4 4 4 4 4 . 
+                    4 4 4 4 4 4 4 4 4 4 4 1 4 4 4 4 
+                    4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 
+                    4 4 1 4 4 4 4 1 4 4 4 4 4 4 4 4 
+                    4 4 4 4 4 4 4 4 4 4 4 4 4 1 4 4 
+                    . 4 4 4 4 4 4 4 4 1 4 4 4 4 4 . 
+                    . . . . 4 4 4 4 4 4 4 4 . . . . 
+                    . . . . d 4 4 4 4 4 4 d . . . . 
+                    . . . . d d d d d d d d . . . . 
+                    . . . . d d d d d d d d . . . . 
+                    . . . . d d d d d d d d . . . . 
+                    . . . . d d d d d d d d . . . . 
+                    `, SpriteKind.BigPowerup)
+                tiles.placeOnTile(bigBoyMush, tiles.getTileLocation(10, 5))
+                bigBoyMush.setVelocity(45, -100)
+                bigBoyMush.ay = 500
+            }
         }
     }
+})
+scene.onOverlapTile(SpriteKind.Big, assets.tile`myTile9`, function (sprite, location) {
+    info.changeLifeBy(-1)
+    pause(500)
+    tiles.placeOnTile(M, tiles.getTileLocation(1, 5))
+    M.setScale(0.25, ScaleAnchor.Middle)
+    M.setKind(SpriteKind.Player)
 })
 let bigBoyMush: Sprite = null
 let M: Sprite = null
@@ -248,24 +348,3 @@ scene.setBackgroundImage(img`
 scroller.scrollBackgroundWithCamera(scroller.CameraScrollMode.OnlyHorizontal)
 M.ay = 500
 info.setLife(3)
-while (controller.A.isPressed()) {
-	
-}
-bigBoyMush = sprites.create(img`
-    . . . . . 4 4 4 4 4 4 . . . . . 
-    . . . . 4 4 4 4 4 4 4 4 . . . . 
-    . . . 4 4 4 4 4 1 4 4 4 4 . . . 
-    . . 4 4 4 4 4 4 4 4 4 4 4 4 . . 
-    . 4 4 4 1 4 4 4 4 4 4 4 4 4 4 . 
-    4 4 4 4 4 4 4 4 4 4 4 1 4 4 4 4 
-    4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 
-    4 4 1 4 4 4 4 1 4 4 4 4 4 4 4 4 
-    4 4 4 4 4 4 4 4 4 4 4 4 4 1 4 4 
-    . 4 4 4 4 4 4 4 4 1 4 4 4 4 4 . 
-    . . . . 4 4 4 4 4 4 4 4 . . . . 
-    . . . . d 4 4 4 4 4 4 d . . . . 
-    . . . . d d d d d d d d . . . . 
-    . . . . d d d d d d d d . . . . 
-    . . . . d d d d d d d d . . . . 
-    . . . . d d d d d d d d . . . . 
-    `, SpriteKind.BigPowerup)
