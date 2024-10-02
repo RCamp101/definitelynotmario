@@ -2,10 +2,14 @@ namespace SpriteKind {
     export const BigPowerup = SpriteKind.create()
     export const crouch = SpriteKind.create()
     export const Big = SpriteKind.create()
+    export const Coin = SpriteKind.create()
 }
+controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
+    M.vy = -200
+})
 scene.onHitWall(SpriteKind.Player, function (sprite, location) {
     if (tiles.tileAtLocationEquals(location, assets.tile`myTile2`)) {
-        if (controller.up.isPressed() && M.y > 60) {
+        if (controller.up.isPressed() && M.y >= location.y) {
             tiles.setTileAt(location, assets.tile`myTile4`)
             tiles.setWallAt(location, true)
             bigBoyMush = sprites.create(img`
@@ -26,11 +30,12 @@ scene.onHitWall(SpriteKind.Player, function (sprite, location) {
                 . . . . d d d d d d d d . . . . 
                 . . . . d d d d d d d d . . . . 
                 `, SpriteKind.BigPowerup)
-            tiles.placeOnTile(bigBoyMush, tiles.getTileLocation(10, 3))
+            tiles.placeOnTile(bigBoyMush, location)
+            bigBoyMush.y += -20
             bigBoyMush.setVelocity(45, -100)
             bigBoyMush.ay = 500
         } else {
-            if (M.vy > 30) {
+            if (M.vy > 250) {
                 tiles.setTileAt(location, assets.tile`myTile4`)
                 tiles.setWallAt(location, true)
                 bigBoyMush = sprites.create(img`
@@ -51,15 +56,30 @@ scene.onHitWall(SpriteKind.Player, function (sprite, location) {
                     . . . . d d d d d d d d . . . . 
                     . . . . d d d d d d d d . . . . 
                     `, SpriteKind.BigPowerup)
-                tiles.placeOnTile(bigBoyMush, tiles.getTileLocation(10, 5))
+                tiles.placeOnTile(bigBoyMush, location)
+                bigBoyMush.y += 15
                 bigBoyMush.setVelocity(45, -100)
                 bigBoyMush.ay = 500
             }
         }
     }
 })
-controller.up.onEvent(ControllerButtonEvent.Pressed, function () {
-    M.vy = -200
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Coin, function (sprite, otherSprite) {
+    sprites.destroy(otherSprite)
+    info.changeScoreBy(1)
+})
+sprites.onOverlap(SpriteKind.Big, SpriteKind.Enemy, function (sprite, otherSprite) {
+    if (M.bottom <= otherSprite.top + 10) {
+        sprites.destroy(otherSprite, effects.fire, 100)
+    } else {
+        M.setScale(0.25, ScaleAnchor.Middle)
+        M.vy = -200
+        M.setKind(SpriteKind.Player)
+    }
+})
+sprites.onOverlap(SpriteKind.Big, SpriteKind.Coin, function (sprite, otherSprite) {
+    sprites.destroy(otherSprite)
+    info.changeScoreBy(1)
 })
 controller.down.onEvent(ControllerButtonEvent.Released, function () {
     M.setImage(img`
@@ -98,20 +118,18 @@ controller.down.onEvent(ControllerButtonEvent.Released, function () {
         `)
     M.ay += -500
 })
-scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile9`, function (sprite, location) {
-    info.changeLifeBy(-1)
-    pause(500)
-    tiles.placeOnTile(M, tiles.getTileLocation(1, 5))
-})
 sprites.onOverlap(SpriteKind.Player, SpriteKind.BigPowerup, function (sprite, otherSprite) {
     M.setScale(0.5, ScaleAnchor.Middle)
     sprites.destroy(bigBoyMush)
     M.setKind(SpriteKind.Big)
+    info.changeScoreBy(5)
 })
-sprites.onOverlap(SpriteKind.Big, SpriteKind.BigPowerup, function (sprite, otherSprite) {
-    sprites.destroy(bigBoyMush)
-    M.setKind(SpriteKind.Big)
-    info.changeLifeBy(1)
+scene.onOverlapTile(SpriteKind.Player, assets.tile`myTile9`, function (sprite, location) {
+    info.changeLifeBy(-1)
+    pause(500)
+    tiles.placeOnTile(M, tiles.getTileLocation(1, 5))
+    tileUtil.replaceAllTiles(assets.tile`myTile4`, assets.tile`myTile2`)
+    sprites.destroyAllSpritesOfKind(SpriteKind.Enemy)
 })
 controller.down.onEvent(ControllerButtonEvent.Pressed, function () {
     M.setImage(assets.image`crouch`)
@@ -122,7 +140,8 @@ info.onLifeZero(function () {
 })
 scene.onHitWall(SpriteKind.Big, function (sprite, location) {
     if (tiles.tileAtLocationEquals(location, assets.tile`myTile2`)) {
-        if (controller.up.isPressed() && M.y > 60) {
+        if (controller.up.isPressed() && M.y >= location.y) {
+            location = location
             tiles.setTileAt(location, assets.tile`myTile4`)
             tiles.setWallAt(location, true)
             bigBoyMush = sprites.create(img`
@@ -143,11 +162,12 @@ scene.onHitWall(SpriteKind.Big, function (sprite, location) {
                 . . . . d d d d d d d d . . . . 
                 . . . . d d d d d d d d . . . . 
                 `, SpriteKind.BigPowerup)
-            tiles.placeOnTile(bigBoyMush, tiles.getTileLocation(10, 3))
+            tiles.placeOnTile(bigBoyMush, location)
+            bigBoyMush.y += -20
             bigBoyMush.setVelocity(45, -100)
             bigBoyMush.ay = 500
         } else {
-            if (M.vy > 30) {
+            if (M.vy > 250) {
                 tiles.setTileAt(location, assets.tile`myTile4`)
                 tiles.setWallAt(location, true)
                 bigBoyMush = sprites.create(img`
@@ -168,7 +188,8 @@ scene.onHitWall(SpriteKind.Big, function (sprite, location) {
                     . . . . d d d d d d d d . . . . 
                     . . . . d d d d d d d d . . . . 
                     `, SpriteKind.BigPowerup)
-                tiles.placeOnTile(bigBoyMush, tiles.getTileLocation(10, 5))
+                tiles.placeOnTile(bigBoyMush, location)
+                bigBoyMush.y += 15
                 bigBoyMush.setVelocity(45, -100)
                 bigBoyMush.ay = 500
             }
@@ -181,9 +202,26 @@ scene.onOverlapTile(SpriteKind.Big, assets.tile`myTile9`, function (sprite, loca
     tiles.placeOnTile(M, tiles.getTileLocation(1, 5))
     M.setScale(0.25, ScaleAnchor.Middle)
     M.setKind(SpriteKind.Player)
+    tileUtil.replaceAllTiles(assets.tile`myTile4`, assets.tile`myTile2`)
+    sprites.destroyAllSpritesOfKind(SpriteKind.Enemy)
+})
+sprites.onOverlap(SpriteKind.Big, SpriteKind.BigPowerup, function (sprite, otherSprite) {
+    sprites.destroy(bigBoyMush)
+    M.setKind(SpriteKind.Big)
+    info.changeLifeBy(1)
+    info.changeScoreBy(10)
+})
+sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
+    if (sprite.bottom <= otherSprite.top + 10) {
+        sprites.destroy(otherSprite, effects.fire, 100)
+    } else {
+        info.changeLifeBy(-1)
+        pauseUntil(() => !(sprite.overlapsWith(otherSprite)))
+    }
 })
 let bigBoyMush: Sprite = null
 let M: Sprite = null
+game.splash("Use buttons to move up to jump down to crouch jump crouch to smash")
 M = sprites.create(img`
     ........222222222222222.........
     ........222222222221111.........
@@ -220,7 +258,7 @@ M = sprites.create(img`
     `, SpriteKind.Player)
 M.setScale(0.25, ScaleAnchor.Middle)
 controller.moveSprite(M, 50, 0)
-tiles.setCurrentTilemap(tilemap`level4`)
+tiles.setCurrentTilemap(tilemap`level0`)
 scene.cameraFollowSprite(M)
 tiles.placeOnTile(M, tiles.getTileLocation(1, 5))
 scene.setBackgroundImage(img`
@@ -345,6 +383,229 @@ scene.setBackgroundImage(img`
     9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
     9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999
     `)
+M.sayText("I'm Mario", 500, false)
 scroller.scrollBackgroundWithCamera(scroller.CameraScrollMode.OnlyHorizontal)
 M.ay = 500
 info.setLife(3)
+let Coin1 = sprites.create(img`
+    . . b b b b . . 
+    . b 5 5 5 5 b . 
+    b 5 d 4 4 d 5 b 
+    b 5 4 5 5 1 5 b 
+    c 5 4 5 5 1 d c 
+    c d d 1 1 d d c 
+    . f d d d d f . 
+    . . f f f f . . 
+    `, SpriteKind.Coin)
+tiles.placeOnTile(Coin1, tiles.getTileLocation(8, 3))
+let Coin2 = sprites.create(img`
+    . . b b b b . . 
+    . b 5 5 5 5 b . 
+    b 5 d 4 4 d 5 b 
+    b 5 4 5 5 1 5 b 
+    c 5 4 5 5 1 d c 
+    c d d 1 1 d d c 
+    . f d d d d f . 
+    . . f f f f . . 
+    `, SpriteKind.Coin)
+tiles.placeOnTile(Coin2, tiles.getTileLocation(9, 3))
+let Coin3 = sprites.create(img`
+    . . b b b b . . 
+    . b 5 5 5 5 b . 
+    b 5 d 4 4 d 5 b 
+    b 5 4 5 5 1 5 b 
+    c 5 4 5 5 1 d c 
+    c d d 1 1 d d c 
+    . f d d d d f . 
+    . . f f f f . . 
+    `, SpriteKind.Coin)
+tiles.placeOnTile(Coin3, tiles.getTileLocation(11, 3))
+let Coin4 = sprites.create(img`
+    . . b b b b . . 
+    . b 5 5 5 5 b . 
+    b 5 d 4 4 d 5 b 
+    b 5 4 5 5 1 5 b 
+    c 5 4 5 5 1 d c 
+    c d d 1 1 d d c 
+    . f d d d d f . 
+    . . f f f f . . 
+    `, SpriteKind.Coin)
+tiles.placeOnTile(Coin4, tiles.getTileLocation(12, 3))
+let Coin5 = sprites.create(img`
+    . . b b b b . . 
+    . b 5 5 5 5 b . 
+    b 5 d 4 4 d 5 b 
+    b 5 4 5 5 1 5 b 
+    c 5 4 5 5 1 d c 
+    c d d 1 1 d d c 
+    . f d d d d f . 
+    . . f f f f . . 
+    `, SpriteKind.Coin)
+let Coin6 = sprites.create(img`
+    . . b b b b . . 
+    . b 5 5 5 5 b . 
+    b 5 d 4 4 d 5 b 
+    b 5 4 5 5 1 5 b 
+    c 5 4 5 5 1 d c 
+    c d d 1 1 d d c 
+    . f d d d d f . 
+    . . f f f f . . 
+    `, SpriteKind.Coin)
+let Coin7 = sprites.create(img`
+    . . b b b b . . 
+    . b 5 5 5 5 b . 
+    b 5 d 4 4 d 5 b 
+    b 5 4 5 5 1 5 b 
+    c 5 4 5 5 1 d c 
+    c d d 1 1 d d c 
+    . f d d d d f . 
+    . . f f f f . . 
+    `, SpriteKind.Coin)
+let Coin8 = sprites.create(img`
+    . . b b b b . . 
+    . b 5 5 5 5 b . 
+    b 5 d 4 4 d 5 b 
+    b 5 4 5 5 1 5 b 
+    c 5 4 5 5 1 d c 
+    c d d 1 1 d d c 
+    . f d d d d f . 
+    . . f f f f . . 
+    `, SpriteKind.Coin)
+let Coin9 = sprites.create(img`
+    . . b b b b . . 
+    . b 5 5 5 5 b . 
+    b 5 d 4 4 d 5 b 
+    b 5 4 5 5 1 5 b 
+    c 5 4 5 5 1 d c 
+    c d d 1 1 d d c 
+    . f d d d d f . 
+    . . f f f f . . 
+    `, SpriteKind.Coin)
+let Coin10 = sprites.create(img`
+    . . b b b b . . 
+    . b 5 5 5 5 b . 
+    b 5 d 4 4 d 5 b 
+    b 5 4 5 5 1 5 b 
+    c 5 4 5 5 1 d c 
+    c d d 1 1 d d c 
+    . f d d d d f . 
+    . . f f f f . . 
+    `, SpriteKind.Coin)
+let Goomba = sprites.create(img`
+    ..........fffffffffffff.........
+    ...f.....ffeeeeeeeeeeeff.....f..
+    ....ffffffeeeeeeeeeeeeeffffff...
+    ........ffffffeeeeeffffff.......
+    ........feef1ffeeeff1feef.......
+    ........feef111fef111feef.......
+    .......ffeef1f1fef1f1feeff......
+    ......ffeeef1f1fef1f1feeeff.....
+    ......feeeef111fef111feeeef.....
+    .....feeeeefffffefffffeeeeef....
+    ....ffee1eeeeeeeeeeeeee1eeeff...
+    ...ffeee11eeeeeeeeeeee11eeeeff..
+    ..ffeee111eeffffffffee111eeeeff.
+    .ffeeeeffffffeeeeeeffffffeeeeeff
+    .feeeeffeeeeeeeeeeeeeeeefffeeeef
+    .feeeffeeeeeeeeeeeeeeeeeeeffeeef
+    .feeefeeeefffffffffffffeeeeffeef
+    .ffeeeeefff..fffffff..fffeeeeeff
+    .ffeeefff...ffdddddff...fffeeeff
+    ..fffff....ffdddddddff....fffff.
+    .........fffdddddddddfff........
+    .........fdddddddddddddf........
+    .........fdddddddddddddf........
+    .........fdddddddddddddf........
+    .........fdddddddddddddf........
+    .........fffdddddddddfff........
+    ...........fffdddddfff..........
+    .....fffffffffffddfffffffff.....
+    ....ffeeeeeeefffffffeeeeeeff....
+    ...ffeeeddeeef....feeeddeeeff...
+    ...feeeddddeef....feeddddeeef...
+    ...fffffffffff....fffffffffff...
+    `, SpriteKind.Enemy)
+Goomba.setScale(0.45, ScaleAnchor.Middle)
+tiles.placeOnTile(Goomba, tiles.getTileLocation(21, 6))
+Goomba.setVelocity(randint(-30, -60), 0)
+pause(1000)
+let Goomba2 = sprites.create(img`
+    ..........fffffffffffff.........
+    ...f.....ffeeeeeeeeeeeff.....f..
+    ....ffffffeeeeeeeeeeeeeffffff...
+    ........ffffffeeeeeffffff.......
+    ........feef1ffeeeff1feef.......
+    ........feef111fef111feef.......
+    .......ffeef1f1fef1f1feeff......
+    ......ffeeef1f1fef1f1feeeff.....
+    ......feeeef111fef111feeeef.....
+    .....feeeeefffffefffffeeeeef....
+    ....ffee1eeeeeeeeeeeeee1eeeff...
+    ...ffeee11eeeeeeeeeeee11eeeeff..
+    ..ffeee111eeffffffffee111eeeeff.
+    .ffeeeeffffffeeeeeeffffffeeeeeff
+    .feeeeffeeeeeeeeeeeeeeeefffeeeef
+    .feeeffeeeeeeeeeeeeeeeeeeeffeeef
+    .feeefeeeefffffffffffffeeeeffeef
+    .ffeeeeefff..fffffff..fffeeeeeff
+    .ffeeefff...ffdddddff...fffeeeff
+    ..fffff....ffdddddddff....fffff.
+    .........fffdddddddddfff........
+    .........fdddddddddddddf........
+    .........fdddddddddddddf........
+    .........fdddddddddddddf........
+    .........fdddddddddddddf........
+    .........fffdddddddddfff........
+    ...........fffdddddfff..........
+    .....fffffffffffddfffffffff.....
+    ....ffeeeeeeefffffffeeeeeeff....
+    ...ffeeeddeeef....feeeddeeeff...
+    ...feeeddddeef....feeddddeeef...
+    ...fffffffffff....fffffffffff...
+    `, SpriteKind.Enemy)
+Goomba2.setScale(0.45, ScaleAnchor.Middle)
+tiles.placeOnTile(Goomba2, tiles.getTileLocation(21, 6))
+Goomba2.setVelocity(randint(-30, -60), 0)
+pause(5000)
+Goomba.setFlag(SpriteFlag.AutoDestroy, true)
+Goomba2.setFlag(SpriteFlag.AutoDestroy, true)
+let KoopaTroopa = sprites.create(img`
+    .....fffffff....................
+    .....f55555ff...................
+    .....f511155f...................
+    .....f51f115f...................
+    ...fff511115f...................
+    ..f5555ffff5f...................
+    .f5555ff55ff5ff.................
+    f5555555555555ff................
+    f5f555555555555ff...............
+    f555555fff555555f...............
+    f555555f55555555f...............
+    f55555ff55555555f...............
+    ff5555f555555555f....ffffff.....
+    .ff555f55555555ff...f777f7fff...
+    ...ffff5555555ff...ff77ff777f...
+    .....f5555555ff...ff777f7777ff..
+    .....fffffffff1ffff7777f777f7f..
+    .............f1111ff77ff77ff77f.
+    .f...........f11111f7ff777f777f.
+    ffff.....ffffff1111fff7777f777f.
+    f55f....ffddddf11111ff777ff777f.
+    f555fffffddddff111111ff77f7777f.
+    f5555555fdddfdff111111fff7777fff
+    ff555555fdffdddff1111111ffffff1f
+    .fffffffffddddfdfff111111111111f
+    .........fdddfddddfff1111111111f
+    .........ffddddddfddffff1111111f
+    ..........fffdddfddfdddfffffffff
+    ............ffdfddfddddff.f55f..
+    .............ffdddddddff..f55f..
+    ..............fffffffff..ff55f..
+    .........................f555f..
+    `, SpriteKind.Enemy)
+KoopaTroopa.setScale(0.45, ScaleAnchor.Middle)
+tiles.placeOnTile(KoopaTroopa, tiles.getTileLocation(50, 3))
+KoopaTroopa.setVelocity(50, 10)
+game.onUpdateInterval(1500, function () {
+    KoopaTroopa.vx = KoopaTroopa.vx * -1
+})
